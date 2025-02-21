@@ -22,7 +22,6 @@ import { AuthService } from '~/modules/auth/auth.service'
 
 import { checkIsDemoMode } from '~/utils'
 
-import { AuthStrategy, PUBLIC_KEY } from '../auth.constant'
 import { TokenService } from '../services/token.service'
 
 /** @type {import('fastify').RequestGenericInterface} */
@@ -37,7 +36,7 @@ interface RequestType {
 
 // https://docs.nestjs.com/recipes/passport#implement-protected-route-and-jwt-strategy-guards
 @Injectable()
-export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
+export class JwtAuthGuard extends AuthGuard('jwt') {
   jwtFromRequestFn = ExtractJwt.fromAuthHeaderAsBearerToken()
 
   constructor(
@@ -50,11 +49,11 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
     super()
   }
 
-  async canActivate(context: ExecutionContext): Promise<any> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ])
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.get<boolean>('isPublic', context.getHandler())
+    if (isPublic) {
+      return true // 如果是公共的，直接返回 true
+    }
     const request = context.switchToHttp().getRequest<FastifyRequest<RequestType>>()
     // const response = context.switchToHttp().getResponse<FastifyReply>()
     if (RouterWhiteList.includes(request.routeOptions.url))
@@ -72,6 +71,7 @@ export class JwtAuthGuard extends AuthGuard(AuthStrategy.JWT) {
     }
 
     const token = this.jwtFromRequestFn(request)
+    console.log(`Token from request: ${token}`)
 
     // 检查 token 是否在黑名单中
     if (await this.redis.get(genTokenBlacklistKey(token)))

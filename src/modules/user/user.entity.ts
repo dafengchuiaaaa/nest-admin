@@ -14,6 +14,7 @@ import { CommonEntity } from '~/common/entity/common.entity'
 
 import { AccessTokenEntity } from '~/modules/auth/entities/access-token.entity'
 
+import { ApiEntity } from '~/modules/business/api/api.entity'
 import { DeptEntity } from '~/modules/system/dept/dept.entity'
 import { RoleEntity } from '~/modules/system/role/role.entity'
 
@@ -66,4 +67,8 @@ export class UserEntity extends CommonEntity {
     cascade: true,
   })
   accessTokens: Relation<AccessTokenEntity[]>
+
+  @ManyToOne(() => ApiEntity, { nullable: true })
+  @JoinColumn({ name: 'api_id' })
+  api: Relation<ApiEntity>
 }

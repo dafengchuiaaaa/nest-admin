@@ -45,6 +45,10 @@ async function bootstrap() {
 
   app.enableCors({ origin: '*', credentials: true })
   app.setGlobalPrefix(globalPrefix)
+  // app.enableVersioning({
+  //   type: VersioningType.URI, // 指定版本控制类型
+  //   defaultVersion: '1',
+  // })
   app.useStaticAssets({ root: path.join(__dirname, '..', 'public') })
   // Starts listening for shutdown hooks
   !isDev && app.enableShutdownHooks()
